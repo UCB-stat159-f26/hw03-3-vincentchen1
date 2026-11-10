@@ -1,0 +1,7 @@
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.ipynb_checkpoints/
+*.Rcheck/
+*.tar.gz

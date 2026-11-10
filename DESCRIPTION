@@ -1,0 +1,17 @@
+Package: tenniscareer
+Title: Retrieve and Visualize Tennis Career Matches
+Version: 0.1.0
+Authors@R: person("Vincent", "Chen", role = c("aut", "cre"),
+    email = "vincent_chen@berkeley.edu")
+Description: Retrieves career match records from Tennis Abstract,
+    processes player and opponent ages, and visualizes career matches
+    using age comparison scatter plots.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports:
+    ggplot2,
+    httr2,
+    jsonlite
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
