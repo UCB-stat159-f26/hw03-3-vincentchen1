@@ -17,9 +17,35 @@ combine_match_rows <- function(historical, recent) {
   rows[!duplicated(keys)]
 }
 
-download_match_rows <- function(identifier) {
+download_legacy_match_rows <- function(identifier) {
   base <- paste0("https://www.tennisabstract.com/jsmatches/", identifier)
-  historical <- parse_career_js(download_tennis_text(paste0(base, "Career.js")))
-  recent <- parse_recent_matches(download_tennis_text(paste0(base, ".js")))
+  historical <- parse_career_js(
+    download_tennis_text(paste0(base, "Career.js"))
+  )
+  recent <- parse_recent_matches(
+    download_tennis_text(paste0(base, ".js"))
+  )
   combine_match_rows(historical, recent)
+}
+
+# Current classic profiles can embed the match array directly.
+download_classic_match_rows <- function(identifier) {
+  url <- paste0(
+    "https://www.tennisabstract.com/cgi-bin/player-classic.cgi?p=",
+    identifier
+  )
+  parse_recent_matches(download_tennis_text(url))
+}
+
+# Fall back only for missing files, not connection or server failures.
+download_match_rows <- function(identifier) {
+  tryCatch(
+    download_legacy_match_rows(identifier),
+    error = function(error) {
+      if (!grepl("HTTP 404", conditionMessage(error), fixed = TRUE)) {
+        stop(error)
+      }
+      download_classic_match_rows(identifier)
+    }
+  )
 }

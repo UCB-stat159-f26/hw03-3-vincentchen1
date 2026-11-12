@@ -39,3 +39,40 @@ test_that("male records can contain either age representation", {
 test_that("empty sources combine safely", {
   expect_identical(combine_match_rows(list(), list()), list())
 })
+
+test_that("missing legacy files fall back to embedded classic matches", {
+  path <- testthat::test_path("fixtures", "MalePlayerCareer.js")
+  text <- paste(readLines(path), collapse = "\n")
+  classic <- sub("morematchmx", "matchmx", text, fixed = TRUE)
+  testthat::local_mocked_bindings(
+    download_legacy_match_rows = function(identifier) {
+      stop("Could not retrieve Tennis Abstract data: HTTP 404 Not Found.")
+    },
+    download_tennis_text = function(url) {
+      expect_identical(
+        url,
+        paste0(
+          "https://www.tennisabstract.com/cgi-bin/",
+          "player-classic.cgi?p=CarlosAlcaraz"
+        )
+      )
+      classic
+    }
+  )
+  expect_length(download_match_rows("CarlosAlcaraz"), 3L)
+})
+
+test_that("connection failures do not trigger a fallback", {
+  testthat::local_mocked_bindings(
+    download_legacy_match_rows = function(identifier) {
+      stop("Connection timed out.")
+    },
+    download_classic_match_rows = function(identifier) {
+      stop("Fallback should not run.")
+    }
+  )
+  expect_error(
+    download_match_rows("CarlosAlcaraz"),
+    "Connection timed out"
+  )
+})
